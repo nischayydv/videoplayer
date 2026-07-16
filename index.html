@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NY Cricket Live</title>
+<title>NY Cricket Live — Pro</title>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -14,6 +14,8 @@
     --green: #22c55e;
     --green-dim: rgba(34,197,94,0.15);
     --green-glow: rgba(34,197,94,0.3);
+    --amber: #f59e0b;
+    --red: #ef4444;
     --bg-deep: #060c14;
     --bg-mid: #0d1520;
     --bg-surface: #111c2b;
@@ -21,6 +23,7 @@
     --border: rgba(255,255,255,0.08);
     --text-primary: #f0f4f8;
     --text-muted: rgba(255,255,255,0.45);
+    --mono: 'JetBrains Mono', monospace;
   }
 
   html, body {
@@ -31,7 +34,6 @@
     overflow-x: hidden;
   }
 
-  /* ── Background pattern ── */
   body::before {
     content: '';
     position: fixed;
@@ -66,367 +68,300 @@
   }
 
   .logo-wrap {
-    width: 52px;
-    height: 52px;
+    width: 52px; height: 52px;
     border-radius: 12px;
     background: var(--bg-surface);
     border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; flex-shrink: 0;
   }
-
-  .logo-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    padding: 4px;
-  }
+  .logo-wrap img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
 
   .header-info { flex: 1; }
-
   .header-info h1 {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 26px;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-    color: #fff;
-    line-height: 1;
-    text-transform: uppercase;
+    font-size: 26px; font-weight: 800; letter-spacing: 0.5px;
+    color: #fff; line-height: 1; text-transform: uppercase;
   }
-
   .header-info h1 span { color: var(--green); }
 
-  .header-meta {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 5px;
-  }
+  .header-meta { display: flex; align-items: center; gap: 10px; margin-top: 5px; flex-wrap: wrap; }
 
   .live-badge {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    background: var(--green-dim);
-    border: 1px solid var(--green-glow);
-    border-radius: 4px;
-    padding: 2px 8px;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--green);
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    display: flex; align-items: center; gap: 5px;
+    background: var(--green-dim); border: 1px solid var(--green-glow);
+    border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600;
+    color: var(--green); text-transform: uppercase; letter-spacing: 1px;
   }
-
-  .live-dot {
-    width: 6px; height: 6px;
-    background: var(--green);
-    border-radius: 50%;
-    animation: blink 1.4s ease-in-out infinite;
-  }
-
+  .live-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: blink 1.4s ease-in-out infinite; }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
-  .header-time {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-variant-numeric: tabular-nums;
+  .header-time { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+  .nav-tabs { display: flex; gap: 6px; }
+  .nav-tab {
+    background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted);
+    font-size: 12px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
+    padding: 7px 14px; border-radius: 7px; cursor: pointer; font-family: 'Barlow', sans-serif;
+    transition: all 0.15s;
   }
+  .nav-tab:hover { color: var(--text-primary); border-color: rgba(255,255,255,0.2); }
+  .nav-tab.active { background: var(--green-dim); border-color: var(--green-glow); color: var(--green); }
+
+  /* ── View toggling ── */
+  .view { display: none; }
+  .view.active { display: block; }
 
   /* ── Video section ── */
   .video-section {
-    background: #000;
-    border-radius: 14px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    position: relative;
-    box-shadow: 0 0 0 1px rgba(34,197,94,0.06), 0 24px 60px rgba(0,0,0,0.7);
+    background: #000; border-radius: 14px; overflow: hidden; border: 1px solid var(--border);
+    position: relative; box-shadow: 0 0 0 1px rgba(34,197,94,0.06), 0 24px 60px rgba(0,0,0,0.7);
   }
 
   .video-wrapper {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16/9;
-    background: #000;
+    position: relative; width: 100%; aspect-ratio: 16/9; background: #000; user-select: none;
   }
+  .video-wrapper.cursor-hidden, .video-wrapper.cursor-hidden * { cursor: none !important; }
 
-  #videoEl {
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
+  #videoEl { width: 100%; height: 100%; display: block; }
 
-  /* Custom controls overlay */
+  /* Overlay */
   .overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    background: linear-gradient(transparent 50%, rgba(0,0,0,0.85) 100%);
-    opacity: 0;
-    transition: opacity 0.25s;
+    position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end;
+    background: linear-gradient(transparent 55%, rgba(0,0,0,0.9) 100%);
+    opacity: 0; transition: opacity 0.25s; pointer-events: none;
   }
+  .overlay.visible { opacity: 1; pointer-events: auto; }
 
-  .video-wrapper:hover .overlay,
-  .video-wrapper.paused .overlay { opacity: 1; }
+  .top-bar {
+    position: absolute; top: 0; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; background: linear-gradient(rgba(0,0,0,0.75), transparent);
+  }
+  .top-bar .stream-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.3px; }
+  .top-bar .live-pill {
+    display: flex; align-items: center; gap: 5px; background: rgba(239,68,68,0.18);
+    border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; font-size: 10px; font-weight: 700;
+    letter-spacing: 1px; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;
+  }
+  .top-bar .live-pill .dot { width: 5px; height: 5px; background: #ef4444; border-radius: 50%; animation: blink 1.2s infinite; }
 
   .center-play {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 64px; height: 64px;
-    background: rgba(34,197,94,0.9);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.15s, background 0.15s;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 64px; height: 64px; background: rgba(34,197,94,0.9); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    transition: transform 0.15s, background 0.15s; pointer-events: auto;
   }
-
   .center-play:hover { transform: translate(-50%, -50%) scale(1.1); background: var(--green); }
   .center-play svg { margin-left: 3px; }
 
-  .overlay-controls {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
+  /* Seek/progress bar */
+  .seek-row { padding: 0 16px; margin-bottom: 2px; }
+  .seek-track {
+    position: relative; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px;
+    cursor: pointer; transition: height 0.1s;
   }
+  .seek-track:hover { height: 6px; }
+  .seek-buffered { position: absolute; top: 0; left: 0; height: 100%; background: rgba(255,255,255,0.3); border-radius: 2px; }
+  .seek-fill { position: absolute; top: 0; left: 0; height: 100%; background: var(--green); border-radius: 2px; }
+  .seek-handle {
+    position: absolute; top: 50%; width: 12px; height: 12px; background: var(--green);
+    border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 3px rgba(34,197,94,0.25);
+    opacity: 0; transition: opacity 0.1s;
+  }
+  .seek-track:hover .seek-handle { opacity: 1; }
+
+  .overlay-controls { display: flex; align-items: center; gap: 8px; padding: 8px 12px 14px; flex-wrap: wrap; }
 
   .oc-btn {
-    background: none;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.15s;
-    flex-shrink: 0;
+    background: none; border: none; color: #fff; cursor: pointer; padding: 7px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center; transition: background 0.15s; flex-shrink: 0; position: relative;
   }
-
   .oc-btn:hover { background: rgba(255,255,255,0.15); }
+  .oc-btn.active-toggle { color: var(--green); }
 
-  .vol-slider {
-    width: 80px;
-    accent-color: var(--green);
-    cursor: pointer;
-  }
+  .vol-group { display: flex; align-items: center; gap: 4px; }
+  .vol-slider { width: 72px; accent-color: var(--green); cursor: pointer; }
 
   .progress-spacer { flex: 1; }
 
-  .quality-label {
-    font-size: 11px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 600;
-    color: var(--green);
-    letter-spacing: 0.5px;
-    background: var(--green-dim);
-    border: 1px solid var(--green-glow);
-    border-radius: 4px;
-    padding: 2px 7px;
-  }
+  .time-label { font-size: 12px; font-family: var(--mono); color: var(--text-muted); white-space: nowrap; }
 
-  /* Loading overlay */
+  .go-live-btn {
+    display: flex; align-items: center; gap: 5px; background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.35); color: #fca5a5; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.5px; padding: 4px 9px; border-radius: 5px; cursor: pointer; text-transform: uppercase;
+  }
+  .go-live-btn .dot { width: 5px; height: 5px; background: #ef4444; border-radius: 50%; }
+  .go-live-btn.live-edge { background: var(--green-dim); border-color: var(--green-glow); color: var(--green); }
+  .go-live-btn.live-edge .dot { background: var(--green); animation: blink 1.4s infinite; }
+
+  /* Settings / quality menu */
+  .menu-pop {
+    position: absolute; bottom: 46px; right: 8px; background: rgba(10,16,24,0.97);
+    border: 1px solid var(--border); border-radius: 10px; min-width: 180px; padding: 6px;
+    display: none; backdrop-filter: blur(8px); box-shadow: 0 10px 30px rgba(0,0,0,0.6); z-index: 20;
+  }
+  .menu-pop.open { display: block; }
+  .menu-section-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted);
+    padding: 6px 10px 4px; font-weight: 600;
+  }
+  .menu-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 8px 10px; border-radius: 6px; font-size: 13px; cursor: pointer; color: var(--text-primary);
+  }
+  .menu-item:hover { background: rgba(255,255,255,0.08); }
+  .menu-item.selected { color: var(--green); }
+  .menu-item .badge { font-size: 10px; color: var(--text-muted); font-family: var(--mono); }
+  .menu-divider { height: 1px; background: var(--border); margin: 4px 0; }
+  .menu-back { display: flex; align-items: center; gap: 6px; padding: 8px 10px; font-size: 12px; color: var(--text-muted); cursor: pointer; }
+  .menu-back:hover { color: var(--text-primary); }
+
+  /* Loading / error */
   .loading-screen {
-    position: absolute;
-    inset: 0;
-    background: #000;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    z-index: 10;
+    position: absolute; inset: 0; background: #000; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px; z-index: 10;
   }
-
   .loader-ring {
-    width: 48px; height: 48px;
-    border: 3px solid rgba(255,255,255,0.08);
-    border-top-color: var(--green);
-    border-radius: 50%;
-    animation: spin 0.75s linear infinite;
+    width: 48px; height: 48px; border: 3px solid rgba(255,255,255,0.08);
+    border-top-color: var(--green); border-radius: 50%; animation: spin 0.75s linear infinite;
   }
-
   @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-screen p { font-size: 13px; color: var(--text-muted); letter-spacing: 0.5px; }
 
-  .loading-screen p {
-    font-size: 13px;
-    color: var(--text-muted);
-    letter-spacing: 0.5px;
-  }
-
-  /* Error */
   .error-screen {
-    position: absolute;
-    inset: 0;
-    background: #000;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    z-index: 10;
+    position: absolute; inset: 0; background: #000; display: none; flex-direction: column;
+    align-items: center; justify-content: center; gap: 12px; z-index: 10; padding: 20px;
   }
-
   .error-icon {
-    width: 48px; height: 48px;
-    border-radius: 50%;
-    background: rgba(239,68,68,0.15);
-    border: 1px solid rgba(239,68,68,0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #f87171;
-    font-size: 22px;
+    width: 48px; height: 48px; border-radius: 50%; background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.3); display: flex; align-items: center; justify-content: center;
+    color: #f87171; font-size: 22px;
   }
-
   .error-screen h3 { font-size: 16px; color: #f87171; }
-  .error-screen p { font-size: 13px; color: var(--text-muted); text-align: center; max-width: 300px; }
-
+  .error-screen p { font-size: 13px; color: var(--text-muted); text-align: center; max-width: 320px; }
   .retry-btn {
-    margin-top: 8px;
-    background: rgba(34,197,94,0.15);
-    border: 1px solid var(--green-glow);
-    color: var(--green);
-    border-radius: 8px;
-    padding: 8px 20px;
-    font-size: 13px;
-    font-family: 'Barlow', sans-serif;
-    cursor: pointer;
-    transition: background 0.15s;
+    margin-top: 8px; background: rgba(34,197,94,0.15); border: 1px solid var(--green-glow);
+    color: var(--green); border-radius: 8px; padding: 8px 20px; font-size: 13px;
+    font-family: 'Barlow', sans-serif; cursor: pointer; transition: background 0.15s;
   }
-
   .retry-btn:hover { background: rgba(34,197,94,0.25); }
 
-  /* ── Stats bar ── */
-  .stats-bar {
-    display: flex;
-    gap: 10px;
-    margin-top: 14px;
-    flex-wrap: wrap;
-  }
-
+  /* Stats bar */
+  .stats-bar { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
   .stat-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 100px;
-    flex: 1;
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 16px; display: flex; flex-direction: column; gap: 2px; min-width: 100px; flex: 1;
   }
-
-  .stat-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--text-muted);
-    font-weight: 600;
-  }
-
-  .stat-value {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-primary);
-  }
-
+  .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 600; }
+  .stat-value { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; color: var(--text-primary); }
   .stat-value.green { color: var(--green); }
 
-  /* ── Controls row ── */
-  .controls-row {
-    display: flex;
-    gap: 10px;
-    margin-top: 14px;
-    flex-wrap: wrap;
-  }
-
+  /* Controls row */
+  .controls-row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
   .ctrl-btn {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    color: var(--text-primary);
-    border-radius: 8px;
-    padding: 9px 16px;
-    font-size: 13px;
-    font-family: 'Barlow', sans-serif;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
+    display: flex; align-items: center; gap: 7px; background: var(--bg-card); border: 1px solid var(--border);
+    color: var(--text-primary); border-radius: 8px; padding: 9px 16px; font-size: 13px;
+    font-family: 'Barlow', sans-serif; font-weight: 500; cursor: pointer; transition: background 0.15s, border-color 0.15s;
   }
-
   .ctrl-btn:hover { background: var(--bg-surface); border-color: rgba(255,255,255,0.15); }
   .ctrl-btn.primary { background: var(--green-dim); border-color: var(--green-glow); color: var(--green); }
   .ctrl-btn.primary:hover { background: rgba(34,197,94,0.25); }
 
-  /* ── Info section ── */
-  .info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 14px;
-  }
-
-  @media (max-width: 540px) {
-    .info-grid { grid-template-columns: 1fr; }
-    .stats-bar { flex-direction: column; }
-  }
-
-  .info-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px;
-  }
-
+  /* Info section */
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+  @media (max-width: 540px) { .info-grid { grid-template-columns: 1fr; } .stats-bar { flex-direction: column; } }
+  .info-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
   .info-card h3 {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--text-muted);
-    margin-bottom: 10px;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--text-muted); margin-bottom: 10px;
   }
-
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    font-size: 13px;
-  }
-
+  .info-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 13px; }
   .info-row:last-child { border-bottom: none; }
   .info-row .key { color: var(--text-muted); }
   .info-row .val { font-weight: 500; color: var(--text-primary); }
   .info-row .val.green { color: var(--green); }
 
-  /* ── Footer ── */
-  .footer {
-    margin-top: 30px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border);
-    text-align: center;
-    font-size: 12px;
-    color: var(--text-muted);
+  /* Stream picker (public streams created by admin) */
+  .stream-picker { margin-top: 14px; }
+  .stream-picker h3 {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--text-muted); margin-bottom: 10px;
+  }
+  .stream-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap: 10px; }
+  .stream-tile {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 12px;
+    cursor: pointer; transition: border-color 0.15s, background 0.15s;
+  }
+  .stream-tile:hover { border-color: var(--green-glow); background: var(--bg-surface); }
+  .stream-tile.active { border-color: var(--green); background: var(--green-dim); }
+  .stream-tile .stile-cat { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--green); font-weight: 700; }
+  .stream-tile .stile-title { font-size: 13px; font-weight: 600; margin-top: 4px; }
+  .stream-tile .stile-empty { font-size: 12px; color: var(--text-muted); }
+
+  /* Footer */
+  .footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--border); text-align: center; font-size: 12px; color: var(--text-muted); }
+  .footer span { color: var(--green); }
+  .footer a { color: var(--text-muted); text-decoration: none; border-bottom: 1px dashed var(--border); }
+  .footer a:hover { color: var(--green); }
+
+  /* ── Admin view ── */
+  .admin-gate { max-width: 380px; margin: 60px auto; text-align: center; }
+  .admin-gate h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; margin-bottom: 6px; }
+  .admin-gate p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+  .field { margin-bottom: 14px; text-align: left; }
+  .field label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; }
+  .field input, .field select, .field textarea {
+    width: 100%; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px; color: var(--text-primary); font-family: 'Barlow', sans-serif; font-size: 13px;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--green-glow); }
+  .field .hint { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
+
+  .admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .admin-header h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; text-transform: uppercase; }
+  .admin-header h2 span { color: var(--green); }
+
+  .warn-banner {
+    display: flex; gap: 10px; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3);
+    color: #fcd34d; font-size: 12px; padding: 10px 14px; border-radius: 8px; margin-bottom: 18px; line-height: 1.5;
   }
 
-  .footer span { color: var(--green); }
+  .admin-grid { display: grid; grid-template-columns: 380px 1fr; gap: 18px; align-items: start; }
+  @media (max-width: 760px) { .admin-grid { grid-template-columns: 1fr; } }
+
+  .admin-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+  .admin-panel h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 14px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 14px; }
+
+  .stream-table { width: 100%; border-collapse: collapse; }
+  .stream-table th {
+    text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted);
+    padding: 8px 10px; border-bottom: 1px solid var(--border);
+  }
+  .stream-table td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 13px; vertical-align: middle; }
+  .stream-table tr:last-child td { border-bottom: none; }
+  .token-preview { font-family: var(--mono); font-size: 11px; color: var(--text-muted); word-break: break-all; max-width: 220px; display: block; }
+  .row-actions { display: flex; gap: 6px; }
+  .mini-btn {
+    background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-primary);
+    font-size: 11px; padding: 5px 9px; border-radius: 6px; cursor: pointer; font-family: 'Barlow', sans-serif;
+  }
+  .mini-btn:hover { border-color: rgba(255,255,255,0.2); }
+  .mini-btn.danger:hover { border-color: rgba(239,68,68,0.4); color: #f87171; }
+  .mini-btn.go:hover { border-color: var(--green-glow); color: var(--green); }
+
+  .empty-state { text-align: center; padding: 30px 10px; color: var(--text-muted); font-size: 13px; }
+
+  /* Toasts */
+  .toast-stack { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 200; }
+  .toast {
+    background: rgba(10,16,24,0.97); border: 1px solid var(--border); border-left: 3px solid var(--green);
+    border-radius: 8px; padding: 10px 14px; font-size: 13px; max-width: 280px; box-shadow: 0 10px 24px rgba(0,0,0,0.5);
+    animation: toastIn 0.2s ease-out;
+  }
+  .toast.error { border-left-color: var(--red); }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body>
@@ -444,124 +379,227 @@
         <div class="header-time" id="clockEl">--:-- --</div>
       </div>
     </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" id="tabViewer" onclick="switchView('viewer')">Watch</button>
+      <button class="nav-tab" id="tabAdmin" onclick="switchView('admin')">Admin</button>
+    </div>
   </header>
 
-  <!-- Video Player -->
-  <div class="video-section">
-    <div class="video-wrapper" id="videoWrap">
-      <video id="videoEl" playsinline></video>
+  <!-- ============ VIEWER ============ -->
+  <div class="view active" id="view-viewer">
 
-      <!-- Loading -->
-      <div class="loading-screen" id="loadingScreen">
-        <div class="loader-ring"></div>
-        <p id="loadingMsg">Connecting to stream...</p>
-      </div>
+    <div class="video-section">
+      <div class="video-wrapper" id="videoWrap">
+        <video id="videoEl" playsinline></video>
 
-      <!-- Error -->
-      <div class="error-screen" id="errorScreen">
-        <div class="error-icon">&#9888;</div>
-        <h3>Stream Unavailable</h3>
-        <p id="errorMsg">Unable to connect. The source may be offline or geo-restricted.</p>
-        <button class="retry-btn" onclick="retryStream()">Retry</button>
-      </div>
-
-      <!-- Overlay controls -->
-      <div class="overlay" id="overlayEl">
-        <div class="center-play" id="centerPlay" onclick="togglePlay()">
-          <svg id="centerIcon" width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+        <div class="loading-screen" id="loadingScreen">
+          <div class="loader-ring"></div>
+          <p id="loadingMsg">Connecting to stream...</p>
         </div>
-        <div class="overlay-controls">
-          <button class="oc-btn" onclick="togglePlay()" title="Play/Pause">
-            <svg id="playIcon" width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
-          </button>
-          <button class="oc-btn" onclick="toggleMute()" title="Mute">
-            <svg id="muteIcon" width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
-          </button>
-          <input class="vol-slider" type="range" id="volRange" min="0" max="100" value="85" oninput="setVol(this.value)">
-          <div class="progress-spacer"></div>
-          <div class="quality-label" id="qualLabel">AUTO</div>
-          <button class="oc-btn" onclick="goFullscreen()" title="Fullscreen">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
-          </button>
+
+        <div class="error-screen" id="errorScreen">
+          <div class="error-icon">&#9888;</div>
+          <h3>Stream Unavailable</h3>
+          <p id="errorMsg">Unable to connect. The source may be offline or geo-restricted.</p>
+          <button class="retry-btn" onclick="retryStream()">Retry</button>
+        </div>
+
+        <div class="overlay" id="overlayEl">
+          <div class="top-bar">
+            <div class="stream-title" id="streamTitleLabel">NY Cricket Live</div>
+            <div class="live-pill"><div class="dot"></div>Live</div>
+          </div>
+
+          <div class="center-play" id="centerPlay" onclick="togglePlay()">
+            <svg id="centerIcon" width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+
+          <div class="seek-row">
+            <div class="seek-track" id="seekTrack" onclick="seekClick(event)">
+              <div class="seek-buffered" id="seekBuffered" style="width:0%"></div>
+              <div class="seek-fill" id="seekFill" style="width:100%"></div>
+              <div class="seek-handle" id="seekHandle" style="left:100%"></div>
+            </div>
+          </div>
+
+          <div class="overlay-controls">
+            <button class="oc-btn" onclick="togglePlay()" title="Play/Pause (space)">
+              <svg id="playIcon" width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+            </button>
+            <div class="vol-group">
+              <button class="oc-btn" onclick="toggleMute()" title="Mute (m)">
+                <svg id="muteIcon" width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+              </button>
+              <input class="vol-slider" type="range" id="volRange" min="0" max="100" value="85" oninput="setVol(this.value)">
+            </div>
+            <button class="go-live-btn" id="goLiveBtn" onclick="goLive()" title="Jump to live edge">
+              <div class="dot"></div><span id="goLiveLabel">Live</span>
+            </button>
+            <span class="time-label" id="timeLabel">--:-- behind</span>
+
+            <div class="progress-spacer"></div>
+
+            <div style="position:relative;">
+              <button class="oc-btn" onclick="toggleMenu('settings')" title="Settings">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+              </button>
+              <div class="menu-pop" id="settingsMenu">
+                <div id="settingsMenuBody"></div>
+              </div>
+            </div>
+
+            <button class="oc-btn" id="pipBtn" onclick="togglePiP()" title="Picture in Picture">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M19 7H9c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm0 8H9V9h10v6zM3 5h8V3H3c-1.1 0-2 .9-2 2v10h2V5z"/></svg>
+            </button>
+
+            <button class="oc-btn" id="fsBtn" onclick="toggleFullscreen()" title="Fullscreen (f)">
+              <svg id="fsIcon" width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-card"><div class="stat-label">Status</div><div class="stat-value green" id="statStatus">Connecting</div></div>
+      <div class="stat-card"><div class="stat-label">Quality</div><div class="stat-value" id="statQuality">Auto</div></div>
+      <div class="stat-card"><div class="stat-label">Protocol</div><div class="stat-value">HLS</div></div>
+      <div class="stat-card"><div class="stat-label">Buffer</div><div class="stat-value" id="statBuffer">0s</div></div>
+    </div>
+
+    <div class="controls-row">
+      <button class="ctrl-btn primary" onclick="togglePlay()" id="mainPlayBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Play
+      </button>
+      <button class="ctrl-btn" onclick="toggleMute()" id="mainMuteBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg> Mute
+      </button>
+      <button class="ctrl-btn" onclick="toggleFullscreen()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg> Fullscreen
+      </button>
+      <button class="ctrl-btn" onclick="retryStream()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg> Reload
+      </button>
+    </div>
+
+    <div class="stream-picker" id="streamPicker" style="display:none;">
+      <h3>Available Streams</h3>
+      <div class="stream-grid" id="streamGrid"></div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <h3>Stream Info</h3>
+        <div class="info-row"><span class="key">Owner</span><span class="val">NY Cricket Live</span></div>
+        <div class="info-row"><span class="key">Format</span><span class="val">M3U8 / HLS</span></div>
+        <div class="info-row"><span class="key">Type</span><span class="val green">Live</span></div>
+        <div class="info-row"><span class="key">Source</span><span class="val" id="infoSource">Proxy CDN</span></div>
+      </div>
+      <div class="info-card">
+        <h3>Playback</h3>
+        <div class="info-row"><span class="key">Volume</span><span class="val" id="infoVol">85%</span></div>
+        <div class="info-row"><span class="key">Resolution</span><span class="val" id="infoRes">—</span></div>
+        <div class="info-row"><span class="key">Dropped Frames</span><span class="val" id="infoDropped">0</span></div>
+        <div class="info-row"><span class="key">Engine</span><span class="val">hls.js</span></div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      &copy; 2025 <span>NY Cricket Live</span> &mdash; All rights reserved &nbsp;·&nbsp; <a onclick="switchView('admin')">Admin Panel</a>
+    </footer>
+  </div>
+
+  <!-- ============ ADMIN ============ -->
+  <div class="view" id="view-admin">
+
+    <!-- Gate -->
+    <div class="admin-gate" id="adminGate">
+      <h2>Admin <span style="color:var(--green)">Access</span></h2>
+      <p>Enter the admin passphrase to manage streams. This is a client-side demo gate only — wire up real server-side authentication before deploying.</p>
+      <div class="field" style="text-align:left">
+        <label>Passphrase</label>
+        <input type="password" id="adminPass" placeholder="Demo passphrase: admin123" onkeydown="if(event.key==='Enter')tryAdminLogin()">
+      </div>
+      <button class="ctrl-btn primary" style="width:100%; justify-content:center" onclick="tryAdminLogin()">Unlock Admin Panel</button>
+    </div>
+
+    <!-- Panel (hidden until unlocked) -->
+    <div id="adminPanelWrap" style="display:none;">
+      <div class="admin-header">
+        <h2>Stream <span>Manager</span></h2>
+        <button class="ctrl-btn" onclick="adminLogout()">Lock Panel</button>
+      </div>
+
+      <div class="warn-banner">
+        &#9888; Stream URLs are AES-256-GCM encrypted client-side before being embedded in shareable links, so the raw .m3u8 URL isn't sitting in plain text. This is <strong>obfuscation for casual viewers, not real DRM</strong> — anyone with the link and browser devtools can still recover the URL. Also note: this demo keeps streams in memory only for this session (no localStorage in this sandboxed view), so entries reset on reload — connect a real database for production use.
+      </div>
+
+      <div class="admin-grid">
+        <div class="admin-panel">
+          <h3>Add New Stream</h3>
+          <div class="field">
+            <label>Stream Title</label>
+            <input type="text" id="newTitle" placeholder="e.g. India vs Australia — 3rd ODI">
+          </div>
+          <div class="field">
+            <label>Category</label>
+            <select id="newCategory">
+              <option>International</option>
+              <option>Domestic</option>
+              <option>T20 League</option>
+              <option>Highlights</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Poster / Thumbnail URL (optional)</label>
+            <input type="text" id="newPoster" placeholder="https://...">
+          </div>
+          <div class="field">
+            <label>Source .m3u8 URL</label>
+            <input type="text" id="newUrl" placeholder="https://cdn.example.com/live/stream.m3u8">
+            <div class="hint">This gets AES-encrypted — it will not appear in plain text in the generated link.</div>
+          </div>
+          <button class="ctrl-btn primary" style="width:100%; justify-content:center" onclick="createStream()">Encrypt &amp; Create Stream Link</button>
+        </div>
+
+        <div class="admin-panel">
+          <h3>Managed Streams (<span id="streamCount">0</span>)</h3>
+          <div id="streamTableWrap">
+            <div class="empty-state">No streams yet. Create one on the left to generate an encrypted embed link.</div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Stats -->
-  <div class="stats-bar">
-    <div class="stat-card">
-      <div class="stat-label">Status</div>
-      <div class="stat-value green" id="statStatus">Connecting</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Quality</div>
-      <div class="stat-value" id="statQuality">Auto</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Protocol</div>
-      <div class="stat-value">HLS</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Buffer</div>
-      <div class="stat-value" id="statBuffer">0s</div>
-    </div>
-  </div>
-
-  <!-- Controls -->
-  <div class="controls-row">
-    <button class="ctrl-btn primary" onclick="togglePlay()" id="mainPlayBtn">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-      Play
-    </button>
-    <button class="ctrl-btn" onclick="toggleMute()" id="mainMuteBtn">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
-      Mute
-    </button>
-    <button class="ctrl-btn" onclick="goFullscreen()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
-      Fullscreen
-    </button>
-    <button class="ctrl-btn" onclick="retryStream()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-      Reload
-    </button>
-  </div>
-
-  <!-- Info -->
-  <div class="info-grid">
-    <div class="info-card">
-      <h3>Stream Info</h3>
-      <div class="info-row"><span class="key">Owner</span><span class="val">NY Cricket Live</span></div>
-      <div class="info-row"><span class="key">Format</span><span class="val">M3U8 / HLS</span></div>
-      <div class="info-row"><span class="key">Type</span><span class="val green">Live</span></div>
-      <div class="info-row"><span class="key">Source</span><span class="val">Proxy CDN</span></div>
-    </div>
-    <div class="info-card">
-      <h3>Playback</h3>
-      <div class="info-row"><span class="key">Volume</span><span class="val" id="infoVol">85%</span></div>
-      <div class="info-row"><span class="key">Resolution</span><span class="val" id="infoRes">—</span></div>
-      <div class="info-row"><span class="key">Dropped Frames</span><span class="val" id="infoDropped">0</span></div>
-      <div class="info-row"><span class="key">Engine</span><span class="val">hls.js</span></div>
-    </div>
-  </div>
-
-  <footer class="footer">
-    &copy; 2025 <span>NY Cricket Live</span> &mdash; All rights reserved
-  </footer>
 </div>
 
+<div class="toast-stack" id="toastStack"></div>
+
 <script>
-const STREAM = "https://misty-violet-a552.nischay419.workers.dev/?url=https://dishmt.slivcdn.com/hls/live/2020591/TEN3HD/master.m3u8?hdnea=exp=1784240536~acl=/*~id=80163195619765322207249310502926~hmac=37ad3fc0695bf46401a42532ae037a3f6fa53fd7e61b9d56619908448e3641cf"
+/* ============================================================
+   STATE
+   ============================================================ */
 const video = document.getElementById('videoEl');
 const wrap = document.getElementById('videoWrap');
 const loadingScreen = document.getElementById('loadingScreen');
 const loadingMsg = document.getElementById('loadingMsg');
 const errorScreen = document.getElementById('errorScreen');
-const centerPlay = document.getElementById('centerPlay');
-let hls, muted = false, currentVol = 85;
+const overlayEl = document.getElementById('overlayEl');
 
-/* Clock */
+let hls, muted = false, currentVol = 85, playbackRate = 1;
+let cursorTimer = null;
+let seekDragging = false;
+
+// In-memory-only "database" of streams created by the admin (no persistence sandbox restriction).
+// In a real deployment, swap this for calls to your backend/database.
+const DEFAULT_STREAM_URL = ""; // placeholder — set via admin panel or ?stream=/#stream=
+let streams = [];          // { id, title, category, poster, createdAt, cipherToken, keyB64 }
+let activeStream = { title: 'NY Cricket Live', url: DEFAULT_STREAM_URL };
+
+/* ============================================================
+   CLOCK
+   ============================================================ */
 function updateClock() {
   document.getElementById('clockEl').textContent =
     new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -569,38 +607,259 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 
-/* HLS init */
+/* ============================================================
+   VIEW SWITCHING
+   ============================================================ */
+function switchView(name) {
+  document.getElementById('view-viewer').classList.toggle('active', name === 'viewer');
+  document.getElementById('view-admin').classList.toggle('active', name === 'admin');
+  document.getElementById('tabViewer').classList.toggle('active', name === 'viewer');
+  document.getElementById('tabAdmin').classList.toggle('active', name === 'admin');
+  location.hash = name === 'admin' ? 'admin' : '';
+}
+if (location.hash === '#admin') switchView('admin');
+
+/* ============================================================
+   TOASTS
+   ============================================================ */
+function toast(msg, isError) {
+  const stack = document.getElementById('toastStack');
+  const el = document.createElement('div');
+  el.className = 'toast' + (isError ? ' error' : '');
+  el.textContent = msg;
+  stack.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }, 3200);
+}
+
+/* ============================================================
+   ENCRYPTION (Web Crypto — AES-256-GCM)
+   Each stream gets a fresh random key. The key travels in the
+   URL fragment (#k=...) so it never gets sent to a server in
+   access logs, while the ciphertext token travels in the query
+   string. This hides the raw .m3u8 URL from page-source / casual
+   inspection, but is NOT a substitute for real DRM or signed,
+   expiring CDN tokens for actual content protection.
+   ============================================================ */
+function b64urlEncode(buf) {
+  return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function b64urlDecode(str) {
+  str = str.replace(/-/g,'+').replace(/_/g,'/');
+  while (str.length % 4) str += '=';
+  const bin = atob(str);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return arr.buffer;
+}
+
+async function encryptUrl(plainUrl) {
+  const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt','decrypt']);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const enc = new TextEncoder().encode(plainUrl);
+  const cipherBuf = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc);
+  const rawKey = await crypto.subtle.exportKey('raw', key);
+  // token = iv + ciphertext, base64url
+  const combined = new Uint8Array(iv.length + cipherBuf.byteLength);
+  combined.set(iv, 0);
+  combined.set(new Uint8Array(cipherBuf), iv.length);
+  return { token: b64urlEncode(combined.buffer), keyB64: b64urlEncode(rawKey) };
+}
+
+async function decryptUrl(token, keyB64) {
+  const rawKey = b64urlDecode(keyB64);
+  const key = await crypto.subtle.importKey('raw', rawKey, 'AES-GCM', false, ['decrypt']);
+  const combined = new Uint8Array(b64urlDecode(token));
+  const iv = combined.slice(0, 12);
+  const cipherBuf = combined.slice(12);
+  const plainBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, cipherBuf);
+  return new TextDecoder().decode(plainBuf);
+}
+
+/* ============================================================
+   ADMIN PANEL
+   ============================================================ */
+const ADMIN_PASS = 'Nischay999'; // demo only — replace with real server-side auth
+
+function tryAdminLogin() {
+  const val = document.getElementById('adminPass').value;
+  if (val === ADMIN_PASS) {
+    document.getElementById('adminGate').style.display = 'none';
+    document.getElementById('adminPanelWrap').style.display = 'block';
+    renderStreamTable();
+    toast('Admin panel unlocked');
+  } else {
+    toast('Incorrect passphrase', true);
+  }
+}
+function adminLogout() {
+  document.getElementById('adminGate').style.display = 'block';
+  document.getElementById('adminPanelWrap').style.display = 'none';
+  document.getElementById('adminPass').value = '';
+}
+
+async function createStream() {
+  const title = document.getElementById('newTitle').value.trim();
+  const category = document.getElementById('newCategory').value;
+  const poster = document.getElementById('newPoster').value.trim();
+  const url = document.getElementById('newUrl').value.trim();
+
+  if (!title || !url) { toast('Title and .m3u8 URL are required', true); return; }
+  if (!/^https?:\/\//i.test(url)) { toast('URL must start with http(s)://', true); return; }
+
+  try {
+    const { token, keyB64 } = await encryptUrl(url);
+    const id = 's' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+    streams.unshift({ id, title, category, poster, createdAt: new Date(), cipherToken: token, keyB64 });
+    document.getElementById('newTitle').value = '';
+    document.getElementById('newPoster').value = '';
+    document.getElementById('newUrl').value = '';
+    renderStreamTable();
+    renderStreamPicker();
+    toast('Stream created & encrypted');
+  } catch (e) {
+    toast('Encryption failed: ' + e.message, true);
+  }
+}
+
+function buildShareLink(s) {
+  const base = location.origin + location.pathname;
+  return `${base}?stream=${s.cipherToken}#k=${s.keyB64}`;
+}
+
+function renderStreamTable() {
+  document.getElementById('streamCount').textContent = streams.length;
+  const wrapEl = document.getElementById('streamTableWrap');
+  if (!streams.length) {
+    wrapEl.innerHTML = '<div class="empty-state">No streams yet. Create one on the left to generate an encrypted embed link.</div>';
+    return;
+  }
+  let rows = streams.map(s => `
+    <tr>
+      <td>
+        <div style="font-weight:600">${escapeHtml(s.title)}</div>
+        <div style="font-size:11px;color:var(--text-muted)">${escapeHtml(s.category)} · ${s.createdAt.toLocaleTimeString()}</div>
+      </td>
+      <td><span class="token-preview">${s.cipherToken.slice(0,24)}…</span></td>
+      <td>
+        <div class="row-actions">
+          <button class="mini-btn go" onclick="loadStreamById('${s.id}')">Play</button>
+          <button class="mini-btn" onclick="copyLink('${s.id}')">Copy Link</button>
+          <button class="mini-btn danger" onclick="deleteStream('${s.id}')">Delete</button>
+        </div>
+      </td>
+    </tr>`).join('');
+  wrapEl.innerHTML = `
+    <table class="stream-table">
+      <thead><tr><th>Stream</th><th>Encrypted Token</th><th>Actions</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function escapeHtml(s) { return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function copyLink(id) {
+  const s = streams.find(x => x.id === id);
+  if (!s) return;
+  const link = buildShareLink(s);
+  navigator.clipboard?.writeText(link).then(
+    () => toast('Encrypted link copied to clipboard'),
+    () => toast('Copy failed — link: ' + link, true)
+  );
+}
+
+function deleteStream(id) {
+  streams = streams.filter(x => x.id !== id);
+  renderStreamTable();
+  renderStreamPicker();
+  toast('Stream deleted');
+}
+
+async function loadStreamById(id) {
+  const s = streams.find(x => x.id === id);
+  if (!s) return;
+  try {
+    const url = await decryptUrl(s.cipherToken, s.keyB64);
+    activeStream = { title: s.title, url };
+    document.getElementById('streamTitleLabel').textContent = s.title;
+    switchView('viewer');
+    initStream();
+    toast('Loaded: ' + s.title);
+  } catch (e) {
+    toast('Could not decrypt stream URL', true);
+  }
+}
+
+function renderStreamPicker() {
+  const picker = document.getElementById('streamPicker');
+  const grid = document.getElementById('streamGrid');
+  if (!streams.length) { picker.style.display = 'none'; return; }
+  picker.style.display = 'block';
+  grid.innerHTML = streams.map(s => `
+    <div class="stream-tile ${activeStream.title === s.title ? 'active' : ''}" onclick="loadStreamById('${s.id}')">
+      <div class="stile-cat">${escapeHtml(s.category)}</div>
+      <div class="stile-title">${escapeHtml(s.title)}</div>
+    </div>`).join('');
+}
+
+/* Load a stream directly from URL params on page load, e.g.
+   yoursite.html?stream=<token>#k=<keyB64> */
+async function loadStreamFromUrlParams() {
+  const params = new URLSearchParams(location.search);
+  const token = params.get('stream');
+  const hashParams = new URLSearchParams(location.hash.replace(/^#/, ''));
+  const keyB64 = hashParams.get('k');
+  if (token && keyB64) {
+    try {
+      const url = await decryptUrl(token, keyB64);
+      activeStream = { title: 'NY Cricket Live', url };
+      toast('Encrypted stream link loaded');
+    } catch (e) {
+      toast('Invalid or corrupted stream link', true);
+    }
+  }
+}
+
+/* ============================================================
+   HLS PLAYER
+   ============================================================ */
 function initStream() {
   loadingScreen.style.display = 'flex';
   errorScreen.style.display = 'none';
   loadingMsg.textContent = 'Connecting to stream...';
+  document.getElementById('infoSource').textContent = activeStream.url ? 'Proxy CDN' : 'No source set';
 
   if (hls) { hls.destroy(); hls = null; }
 
+  if (!activeStream.url) {
+    showError('No stream source configured yet. Add one from the Admin panel, or open a link like ?stream=TOKEN#k=KEY.');
+    return;
+  }
+
   if (Hls.isSupported()) {
     hls = new Hls({ enableWorker: true, lowLatencyMode: true, maxBufferLength: 30 });
-    hls.loadSource(STREAM);
+    hls.loadSource(activeStream.url);
     hls.attachMedia(video);
 
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
       loadingMsg.textContent = 'Starting playback...';
       video.volume = currentVol / 100;
+      buildQualityMenu();
       video.play().catch(() => { loadingScreen.style.display = 'none'; setStatus('Paused'); });
     });
 
     hls.on(Hls.Events.LEVEL_SWITCHED, (_, d) => {
       const lv = hls.levels[d.level];
       const q = lv && lv.height ? lv.height + 'p' : 'Auto';
-      document.getElementById('qualLabel').textContent = q;
       document.getElementById('statQuality').textContent = q;
       document.getElementById('infoRes').textContent = lv ? (lv.width + '×' + lv.height) : '—';
+      buildQualityMenu();
     });
 
     hls.on(Hls.Events.ERROR, (_, d) => {
       if (d.fatal) showError('Stream unavailable or geo-restricted. Try again later.');
     });
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = STREAM;
+    video.src = activeStream.url;
     video.volume = currentVol / 100;
     video.play().catch(() => {});
   } else {
@@ -614,31 +873,66 @@ function showError(msg) {
   document.getElementById('errorMsg').textContent = msg;
   setStatus('Error');
 }
-
 function retryStream() { initStream(); }
-
 function setStatus(s) { document.getElementById('statStatus').textContent = s; }
 
-/* Buffer tracker */
+/* Buffer / DVR tracking */
 setInterval(() => {
   if (video.buffered.length) {
-    const buf = Math.max(0, video.buffered.end(video.buffered.length - 1) - video.currentTime);
+    const bufEnd = video.buffered.end(video.buffered.length - 1);
+    const buf = Math.max(0, bufEnd - video.currentTime);
     document.getElementById('statBuffer').textContent = buf.toFixed(1) + 's';
+    updateSeekUI(bufEnd);
   }
   if (video.getVideoPlaybackQuality) {
-    document.getElementById('infoDropped').textContent =
-      video.getVideoPlaybackQuality().droppedVideoFrames || 0;
+    document.getElementById('infoDropped').textContent = video.getVideoPlaybackQuality().droppedVideoFrames || 0;
   }
-}, 2000);
+}, 1000);
 
-/* Events */
-video.addEventListener('playing', () => {
-  loadingScreen.style.display = 'none';
-  setStatus('Live');
-  wrap.classList.remove('paused');
-  setPlayUI(true);
-});
-video.addEventListener('pause', () => { wrap.classList.add('paused'); setStatus('Paused'); setPlayUI(false); });
+function updateSeekUI(liveEdge) {
+  if (seekDragging || !video.duration && !liveEdge) return;
+  const seekable = video.seekable;
+  if (!seekable.length) return;
+  const start = seekable.start(0);
+  const end = liveEdge || seekable.end(seekable.length - 1);
+  const span = Math.max(0.001, end - start);
+  const pos = Math.min(1, Math.max(0, (video.currentTime - start) / span));
+  document.getElementById('seekFill').style.width = (pos * 100) + '%';
+  document.getElementById('seekHandle').style.left = (pos * 100) + '%';
+  document.getElementById('seekBuffered').style.width = '100%';
+
+  const behind = end - video.currentTime;
+  const goLiveBtn = document.getElementById('goLiveBtn');
+  const label = document.getElementById('timeLabel');
+  if (behind < 4) {
+    goLiveBtn.classList.add('live-edge');
+    document.getElementById('goLiveLabel').textContent = 'Live';
+    label.textContent = 'At live edge';
+  } else {
+    goLiveBtn.classList.remove('live-edge');
+    document.getElementById('goLiveLabel').textContent = 'Go Live';
+    const m = Math.floor(behind / 60), sec = Math.floor(behind % 60);
+    label.textContent = `-${m}:${String(sec).padStart(2,'0')} behind`;
+  }
+}
+
+function seekClick(e) {
+  const seekable = video.seekable;
+  if (!seekable.length) return;
+  const rect = e.currentTarget.getBoundingClientRect();
+  const pct = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+  const start = seekable.start(0), end = seekable.end(seekable.length - 1);
+  video.currentTime = start + pct * (end - start);
+}
+
+function goLive() {
+  const seekable = video.seekable;
+  if (seekable.length) video.currentTime = seekable.end(seekable.length - 1) - 0.5;
+}
+
+/* Playback events */
+video.addEventListener('playing', () => { loadingScreen.style.display = 'none'; setStatus('Live'); setPlayUI(true); });
+video.addEventListener('pause', () => { setStatus('Paused'); setPlayUI(false); showControls(); });
 video.addEventListener('waiting', () => setStatus('Buffering…'));
 
 function setPlayUI(playing) {
@@ -649,11 +943,10 @@ function setPlayUI(playing) {
   document.getElementById('centerIcon').children[0].setAttribute('d', p);
   document.getElementById('mainPlayBtn').innerHTML =
     `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="${p}"/></svg> ${playing ? 'Pause' : 'Play'}`;
+  document.getElementById('centerPlay').style.display = playing ? 'none' : 'flex';
 }
 
-function togglePlay() {
-  if (video.paused) video.play(); else video.pause();
-}
+function togglePlay() { if (video.paused) video.play(); else video.pause(); }
 
 function toggleMute() {
   muted = !muted;
@@ -670,16 +963,149 @@ function setVol(v) {
   currentVol = +v;
   video.volume = v / 100;
   video.muted = v == 0;
+  muted = v == 0;
   document.getElementById('infoVol').textContent = v + '%';
+  document.getElementById('volRange').value = v;
 }
 
-function goFullscreen() {
+/* ============================================================
+   FULLSCREEN — fixed maximize/minimize + cursor auto-hide
+   ============================================================ */
+function toggleFullscreen() {
   const el = document.querySelector('.video-section');
-  if (el.requestFullscreen) el.requestFullscreen();
-  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  if (!isFs) {
+    (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+  } else {
+    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+  }
 }
 
-initStream();
+function onFullscreenChange() {
+  const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  const EXPAND = 'M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z';
+  const COLLAPSE = 'M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z';
+  document.getElementById('fsIcon').children[0].setAttribute('d', isFs ? COLLAPSE : EXPAND);
+  // Re-check cursor idle state whenever fullscreen toggles, since the
+  // browser resets mouse position/state on transition.
+  resetCursorTimer();
+}
+document.addEventListener('fullscreenchange', onFullscreenChange);
+document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+
+/* Picture-in-Picture */
+function togglePiP() {
+  if (document.pictureInPictureElement) {
+    document.exitPictureInPicture();
+  } else if (video.requestPictureInPicture) {
+    video.requestPictureInPicture().catch(() => toast('Picture-in-picture not available', true));
+  }
+}
+
+/* Cursor + control auto-hide — works both windowed and fullscreen.
+   Bound to the wrapper (not just fullscreen) so it never gets stuck
+   showing/hiding incorrectly after entering/exiting fullscreen. */
+function showControls() {
+  overlayEl.classList.add('visible');
+  wrap.classList.remove('cursor-hidden');
+}
+function resetCursorTimer() {
+  showControls();
+  clearTimeout(cursorTimer);
+  cursorTimer = setTimeout(() => {
+    if (!video.paused && !anyMenuOpen()) {
+      overlayEl.classList.remove('visible');
+      wrap.classList.add('cursor-hidden');
+    }
+  }, 2800);
+}
+function anyMenuOpen() { return document.querySelector('.menu-pop.open') !== null; }
+
+wrap.addEventListener('mousemove', resetCursorTimer);
+wrap.addEventListener('mouseenter', resetCursorTimer);
+wrap.addEventListener('mouseleave', () => { if (!video.paused) { overlayEl.classList.remove('visible'); } });
+wrap.addEventListener('click', (e) => { if (e.target === video) togglePlay(); });
+wrap.addEventListener('dblclick', (e) => { if (e.target === video) toggleFullscreen(); });
+resetCursorTimer();
+
+/* ============================================================
+   SETTINGS / QUALITY MENU
+   ============================================================ */
+function toggleMenu(name) {
+  const menu = document.getElementById('settingsMenu');
+  const willOpen = !menu.classList.contains('open');
+  menu.classList.toggle('open', willOpen);
+  if (willOpen) { buildQualityMenu(); resetCursorTimer(); }
+}
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('settingsMenu');
+  if (menu.classList.contains('open') && !e.target.closest('.menu-pop') && !e.target.closest('[onclick*="toggleMenu"]')) {
+    menu.classList.remove('open');
+  }
+});
+
+function buildQualityMenu(sub) {
+  const body = document.getElementById('settingsMenuBody');
+  if (sub === 'quality' && hls) {
+    let html = `<div class="menu-back" onclick="buildQualityMenu()">&larr; Back</div><div class="menu-divider"></div>`;
+    html += `<div class="menu-item ${hls.currentLevel === -1 ? 'selected' : ''}" onclick="setQuality(-1)">Auto <span class="badge">${hls.currentLevel === -1 ? '&#10003;' : ''}</span></div>`;
+    hls.levels.forEach((lv, i) => {
+      const sel = hls.currentLevel === i;
+      html += `<div class="menu-item ${sel ? 'selected' : ''}" onclick="setQuality(${i})">${lv.height}p <span class="badge">${sel ? '&#10003;' : (Math.round(lv.bitrate/1000)+'kbps')}</span></div>`;
+    });
+    body.innerHTML = html;
+  } else if (sub === 'speed') {
+    const rates = [0.25, 0.5, 1, 1.25, 1.5, 2];
+    let html = `<div class="menu-back" onclick="buildQualityMenu()">&larr; Back</div><div class="menu-divider"></div>`;
+    rates.forEach(r => {
+      html += `<div class="menu-item ${playbackRate === r ? 'selected' : ''}" onclick="setSpeed(${r})">${r === 1 ? 'Normal' : r + '×'} <span class="badge">${playbackRate === r ? '&#10003;' : ''}</span></div>`;
+    });
+    body.innerHTML = html;
+  } else {
+    const qLabel = hls && hls.currentLevel >= 0 && hls.levels[hls.currentLevel] ? hls.levels[hls.currentLevel].height + 'p' : 'Auto';
+    body.innerHTML = `
+      <div class="menu-section-label">Playback</div>
+      <div class="menu-item" onclick="buildQualityMenu('quality')">Quality <span class="badge">${qLabel}</span></div>
+      <div class="menu-item" onclick="buildQualityMenu('speed')">Speed <span class="badge">${playbackRate === 1 ? 'Normal' : playbackRate + '×'}</span></div>`;
+  }
+}
+function setQuality(idx) {
+  if (hls) hls.currentLevel = idx;
+  document.getElementById('statQuality').textContent = idx === -1 ? 'Auto' : hls.levels[idx].height + 'p';
+  buildQualityMenu('quality');
+}
+function setSpeed(r) {
+  playbackRate = r;
+  video.playbackRate = r;
+  buildQualityMenu('speed');
+}
+
+/* ============================================================
+   KEYBOARD SHORTCUTS
+   ============================================================ */
+document.addEventListener('keydown', (e) => {
+  if (document.getElementById('view-viewer').classList.contains('active') === false) return;
+  if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+  switch (e.key.toLowerCase()) {
+    case ' ': case 'k': e.preventDefault(); togglePlay(); break;
+    case 'm': toggleMute(); break;
+    case 'f': toggleFullscreen(); break;
+    case 'arrowup': e.preventDefault(); setVol(Math.min(100, currentVol + 5)); break;
+    case 'arrowdown': e.preventDefault(); setVol(Math.max(0, currentVol - 5)); break;
+    case 'arrowright': if (video.seekable.length) video.currentTime = Math.min(video.seekable.end(0), video.currentTime + 10); break;
+    case 'arrowleft': if (video.seekable.length) video.currentTime = Math.max(video.seekable.start(0), video.currentTime - 10); break;
+  }
+  resetCursorTimer();
+});
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+(async function boot() {
+  await loadStreamFromUrlParams();
+  renderStreamPicker();
+  initStream();
+})();
 </script>
 </body>
 </html>
